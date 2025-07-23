@@ -9,7 +9,7 @@ Tanto el ATTiny85 como el Wemos D1 Mini son programables, lo que permite:
 - Personalizar la forma de envío (por ejemplo, hacer solicitudes HTTP a tu propio sistema).
 - Además, el ATTiny85 puede ser modificado para trabajar en base a intervalos de tiempo, utilizando librerías como <a href="https://github.com/connornishijima/TinySnore">TinySnore</a>, mejorando aún más la eficiencia energética y permitiendo distintas estrategias de notificación.
 
-![alt text](https://github.com/LucasPifo/Sensor-magnetico-lowpower/Imagenes/blob/main/Sensor%20completo.jpeg?raw=true)
+![alt text](https://raw.githubusercontent.com/LucasPifo/Sensor-magnetico-lowpower/refs/heads/main/Imagenes/Sensor%20completo.jpeg)
 
 ## 💡 Problemática que se buscaba resolver
 - Monitorear en tiempo real la apertura y cierre de cortinas, puertas o cualquier acceso.
@@ -51,10 +51,10 @@ El `MOSFET AO3413`, que es de montaje superficial (SMD).
 - Resistencias: 220 Ω, 1 kΩ, 10 kΩ, 46 kΩ, 100 kΩ, 220 kΩ, 1 MΩ
 
 ## 🔌 Diagrama de conexión
-![alt text](https://github.com/LucasPifo/Sensor-magnetico-lowpower/Imagenes/blob/main/Esquema%20electronico.jpg?raw=true)
+![alt text](https://raw.githubusercontent.com/LucasPifo/Sensor-magnetico-lowpower/refs/heads/main/Imagenes/Esquema%20electronico.bmp)
 
 ## 🧩 PCB
-![alt text](https://github.com/LucasPifo/Sensor-magnetico-lowpower/Imagenes/blob/main/Dise%C3%B1o%20PCB.png?raw=true)
+![alt text](https://raw.githubusercontent.com/LucasPifo/Sensor-magnetico-lowpower/refs/heads/main/Imagenes/Dise%C3%B1o%20PCB.png)
 
 ## ⚡ Funcionamiento y Flujo
 ### Estado de Reposo (Ultra Bajo Consumo):
