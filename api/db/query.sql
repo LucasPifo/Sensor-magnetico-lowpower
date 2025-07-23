@@ -1,0 +1,12 @@
+CREATE DATABASE IF NOT EXISTS sensores;
+USE sensores;
+
+CREATE TABLE IF NOT EXISTS detecciones (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    createdDate DATETIME NOT NULL,
+    modifiedDate DATETIME NOT NULL,
+    mac VARCHAR(17) NOT NULL,
+    estatus TINYINT(1) NOT NULL,
+    bateria TINYINT UNSIGNED NOT NULL,
+    tiempoEncendido INT UNSIGNED NOT NULL
+);

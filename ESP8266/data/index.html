@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Configuración WiFi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f2f4f7;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.7rem;
+            margin-bottom: 1.2rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #198754;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #12643e;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: -1rem;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            color: green;
+            text-align: center;
+        }
+
+        .leyenda {
+            font-size: 0.9rem;
+            color: #555;
+            background: #eef;
+            padding: 0.8rem;
+            border-left: 4px solid #198754;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Toggle switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+            margin-bottom: 1.2rem;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #007BFF;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+        }
+
+        .toggle-label {
+            font-weight: 500;
+            vertical-align: middle;
+            margin-left: 10px;
+            user-select: none;
+        }
+
+        /* Ocultar campos IP cuando toggle está off */
+        .ip-fields {
+            display: none;
+        }
+
+        .ip-fields.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Configuración WiFi</h2>
+
+        <div class="leyenda">
+            ⚡ Puedes dejar los campos de IP vacíos para usar DHCP, pero si configuras IP fija, la
+            <strong>batería puede durar más</strong> porque la conexión será más rápida.
+        </div>
+
+        <form id="wifiForm">
+            <label for="ssid">*SSID</label>
+            <input type="text" id="ssid" name="ssid" required />
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" />
+
+            <label>
+                <span class="toggle-label">Usar IP fija</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggleIP" />
+                    <span class="slider"></span>
+                </label>
+            </label>
+
+            <div class="ip-fields" id="ipFields">
+                <label for="ip">*IP Fija</label>
+                <input type="text" id="ip" name="ip" placeholder="192.168.1.100" />
+
+                <label for="gateway">*Gateway</label>
+                <input type="text" id="gateway" name="gateway" placeholder="192.168.1.1" />
+
+                <label for="subnet">*Subnet</label>
+                <input type="text" id="subnet" name="subnet" placeholder="255.255.255.0" />
+
+                <label for="dns1">DNS Primario</label>
+                <input type="text" id="dns1" name="dns1" placeholder="8.8.8.8" />
+
+                <label for="dns2">DNS Secundario</label>
+                <input type="text" id="dns2" name="dns2" placeholder="8.8.4.4" />
+            </div>
+
+            <div class="error" id="errorMsg"></div>
+            <button type="submit">Guardar configuración</button>
+            <p class="success" id="successMsg"></p>
+        </form>
+    </div>
+
+    <script>
+        const toggleIP = document.getElementById("toggleIP");
+        const ipFields = document.getElementById("ipFields");
+
+        toggleIP.addEventListener("change", () => {
+            if (toggleIP.checked) {
+                ipFields.classList.add("active");
+            } else {
+                ipFields.classList.remove("active");
+            }
+        });
+
+        function validarIP(ip) {
+            return /^(\d{1,3}\.){3}\d{1,3}$/.test(ip.trim()) &&
+                ip.split(".").every(seg => parseInt(seg) >= 0 && parseInt(seg) <= 255);
+        }
+
+        document.getElementById("wifiForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const ssid = document.getElementById("ssid").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const usarIPFija = toggleIP.checked;
+
+            const ip = document.getElementById("ip").value.trim();
+            const gateway = document.getElementById("gateway").value.trim();
+            const subnet = document.getElementById("subnet").value.trim();
+            const dns1 = document.getElementById("dns1").value.trim();
+            const dns2 = document.getElementById("dns2").value.trim();
+
+            const errorMsg = document.getElementById("errorMsg");
+            const successMsg = document.getElementById("successMsg");
+            errorMsg.textContent = "";
+            successMsg.textContent = "";
+
+            if (!ssid) {
+                errorMsg.textContent = "⚠️ El campo SSID es obligatorio.";
+                return;
+            }
+
+            if (usarIPFija) {
+                if (!validarIP(ip) || !validarIP(gateway) || !validarIP(subnet)) {
+                    errorMsg.textContent = "⚠️ IP, Gateway y Subnet deben ser IPs válidas.";
+                    return;
+                }
+                if (dns1 && !validarIP(dns1)) {
+                    errorMsg.textContent = "⚠️ DNS Primario inválido.";
+                    return;
+                }
+                if (dns2 && !validarIP(dns2)) {
+                    errorMsg.textContent = "⚠️ DNS Secundario inválido.";
+                    return;
+                }
+            }
+
+            const data = {
+                ssid,
+                password,
+                ip: usarIPFija ? ip : "",
+                gateway: usarIPFija ? gateway : "",
+                subnet: usarIPFija ? subnet : "",
+                dns1: usarIPFija ? dns1 : "",
+                dns2: usarIPFija ? dns2 : ""
+            };
+
+            try {
+                const res = await fetch("/guardar-config", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    successMsg.textContent = "✅ Configuración guardada. Reiniciando...";
+                } else {
+                    errorMsg.textContent = "❌ Error al guardar la configuración.";
+                }
+            } catch (err) {
+                errorMsg.textContent = "❌ No se pudo comunicar con el dispositivo.";
+            }
+        });
+    </script>
+</body>
+
+</html>
