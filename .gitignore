@@ -1,5 +1,8 @@
-./api/node_modules
+# Ignorar node_modules en todas las carpetas
+**/node_modules/
 
-./api/.env
+# Ignorar archivos .env en cualquier carpeta
+**/.env
 
-./api/certs
+# Ignorar carpetas certs en cualquier subdirectorio
+**/certs/
