@@ -28,10 +28,10 @@ export const getSensores = async (req, res) => {
                 WHERE t2.mac = t1.mac
                     AND t2.createdDate > t1.createdDate
                     AND t2.createdDate <= ?
-                    AND t2.estatus = 0
+                    AND t2.estatus = 1
                 ) AS closed_at
             FROM detecciones AS t1
-            WHERE t1.estatus = 1
+            WHERE t1.estatus = 0
                 AND t1.createdDate BETWEEN ? AND ?
             ),
             mayor_apertura AS (
@@ -75,8 +75,8 @@ export const getSensores = async (req, res) => {
             COUNT(a.opened_at) AS veces_abierto,
             b.nivel_bateria_mas_reciente AS bateria_actual,
             CASE e.estado_reciente
-                WHEN 0 THEN 'Cerrado'
-                WHEN 1 THEN 'Abierto'
+                WHEN 0 THEN 'Abierto'
+                WHEN 1 THEN 'Cerrado'
                 ELSE 'Desconocido'
             END AS estatus_actual,
             SEC_TO_TIME(m.segundos_mayor_apertura) AS tiempo_mayor_apertura,
