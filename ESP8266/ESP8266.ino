@@ -40,7 +40,6 @@ struct WifiConfig {
   bool usarIPFija = false;
 };
 
-
 const char* HOST = ""; // ***** AGREGA TU DOMINIO o IP
 const char* URL_SENSOR = "/api/sensorMagnetico"; // La ruta base de tu API sensor magnetico
 const char* URL_FINGERPRINT = "/api/fingerprint"; // La ruta base de tu API huella
@@ -63,11 +62,10 @@ volatile unsigned long tiempoInicio = 0;
 // Ultimo evento enviado realmente al servidor
 int ultimoEventoEnviado = 0;
 bool banderaEnvioPosterior = false;
-String idEnvio = "";
 
 // --- ISR para sensor con antirrebote simple (usa millis) ---
 volatile unsigned long tiempoUltimoEventoMs = 0;
-const uint16_t DEBOUNCE_MS = 200;
+const uint16_t DEBOUNCE_MS = 400;
 
 void IRAM_ATTR sensorCambio() {
   noInterrupts();
@@ -524,7 +522,7 @@ void setup() {
   tiempoInicio = millis();
   tiempoUltimoEventoMs = tiempoInicio;
 
-  delay(200);
+  delay(400);
   eventos[indiceEvento].estado = !digitalRead(SENSOR);
   eventos[indiceEvento].tiempoRelativo = 0;
   indiceEvento++;
