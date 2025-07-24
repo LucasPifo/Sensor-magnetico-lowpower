@@ -19,82 +19,84 @@ export const getSensores = async (req, res) => {
 
         const query = `
             WITH aperturas_y_cierres_emparejados AS (
-            SELECT
-                t1.createdDate AS opened_at,
-                t1.mac,
-                (
-                SELECT MIN(t2.createdDate)
-                FROM detecciones AS t2
-                WHERE t2.mac = t1.mac
-                    AND t2.createdDate > t1.createdDate
-                    AND t2.createdDate <= ?
-                    AND t2.estatus = 1
-                ) AS closed_at
-            FROM detecciones AS t1
-            WHERE t1.estatus = 0
-                AND t1.createdDate BETWEEN ? AND ?
+                SELECT
+                    t1.createdDate AS opened_at,
+                    t1.mac,
+                    (
+                        SELECT MIN(t2.createdDate)
+                        FROM detecciones AS t2
+                        WHERE t2.mac = t1.mac
+                            AND t2.createdDate > t1.createdDate
+                            AND t2.createdDate <= ?
+                            AND t2.estatus = 0  -- ahora cierre = 0
+                    ) AS closed_at
+                FROM detecciones AS t1
+                WHERE t1.estatus = 1  -- ahora apertura = 1
+                    AND t1.createdDate BETWEEN ? AND ?
             ),
             mayor_apertura AS (
-            SELECT
-                mac,
-                opened_at AS fecha_mayor_apertura,
-                TIMESTAMPDIFF(SECOND, opened_at, closed_at) AS segundos_mayor_apertura
-            FROM (
-                SELECT *,
-                ROW_NUMBER() OVER (PARTITION BY mac ORDER BY TIMESTAMPDIFF(SECOND, opened_at, closed_at) DESC) AS rn
-                FROM aperturas_y_cierres_emparejados
-                WHERE closed_at IS NOT NULL
-            ) t
-            WHERE rn = 1
+                SELECT
+                    mac,
+                    opened_at AS fecha_mayor_apertura,
+                    TIMESTAMPDIFF(SECOND, opened_at, closed_at) AS segundos_mayor_apertura
+                FROM (
+                    SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY mac ORDER BY TIMESTAMPDIFF(SECOND, opened_at, closed_at) DESC) AS rn
+                    FROM aperturas_y_cierres_emparejados
+                    WHERE closed_at IS NOT NULL
+                ) t
+                WHERE rn = 1
             ),
             bateria_reciente AS (
-            SELECT mac, bateria AS nivel_bateria_mas_reciente
-            FROM (
-                SELECT *,
-                ROW_NUMBER() OVER (PARTITION BY mac ORDER BY createdDate DESC) AS rn
-                FROM detecciones
-                WHERE createdDate BETWEEN ? AND ?
-            ) AS t
-            WHERE rn = 1
+                SELECT mac, bateria AS nivel_bateria_mas_reciente
+                FROM (
+                    SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY mac ORDER BY createdDate DESC) AS rn
+                    FROM detecciones
+                    WHERE createdDate BETWEEN ? AND ?
+                ) AS t
+                WHERE rn = 1
             ),
             ultimo_estado AS (
-            SELECT mac, estatus AS estado_reciente
-            FROM (
-                SELECT *,
-                ROW_NUMBER() OVER (PARTITION BY mac ORDER BY createdDate DESC) AS rn
-                FROM detecciones
-                WHERE createdDate BETWEEN ? AND ?
-            ) AS t
-            WHERE rn = 1
+                SELECT mac, estatus AS estado_reciente
+                FROM (
+                    SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY mac ORDER BY createdDate DESC) AS rn
+                    FROM detecciones
+                    WHERE createdDate BETWEEN ? AND ?
+                ) AS t
+                WHERE rn = 1
             )
-    
+
             SELECT
-            a.mac,
-            SEC_TO_TIME(SUM(TIMESTAMPDIFF(SECOND, opened_at, closed_at))) AS tiempo_abierto,
-            TIME_FORMAT(SEC_TO_TIME(AVG(TIMESTAMPDIFF(SECOND, opened_at, closed_at))), '%H:%i:%s') AS tiempo_promedio,
-            COUNT(a.opened_at) AS veces_abierto,
-            b.nivel_bateria_mas_reciente AS bateria_actual,
-            CASE e.estado_reciente
-                WHEN 0 THEN 'Abierto'
-                WHEN 1 THEN 'Cerrado'
-                ELSE 'Desconocido'
-            END AS estatus_actual,
-            SEC_TO_TIME(m.segundos_mayor_apertura) AS tiempo_mayor_apertura,
-            DATE_FORMAT(m.fecha_mayor_apertura, '%Y-%m-%d %H:%i:%s') AS fecha_mayor_apertura,
-            DATE_FORMAT(MIN(a.opened_at), '%Y-%m-%d %H:%i:%s') AS fecha_primer_apertura,
-            DATE_FORMAT(MAX(a.opened_at), '%Y-%m-%d %H:%i:%s') AS fecha_ultima_apertura
+                a.mac,
+                SUM(TIMESTAMPDIFF(SECOND, opened_at, closed_at)) AS tiempo_abierto_segundos, -- si quieres el total en segundos
+                SEC_TO_TIME(SUM(TIMESTAMPDIFF(SECOND, opened_at, closed_at))) AS tiempo_abierto,
+                TIME_FORMAT(SEC_TO_TIME(AVG(TIMESTAMPDIFF(SECOND, opened_at, closed_at))), '%H:%i:%s') AS tiempo_promedio,
+                COUNT(a.opened_at) AS veces_abierto,
+                b.nivel_bateria_mas_reciente AS bateria_actual,
+                CASE e.estado_reciente
+                    WHEN 1 THEN 'Abierto'
+                    WHEN 0 THEN 'Cerrado'
+                    ELSE 'Desconocido'
+                END AS estatus_actual,
+                SEC_TO_TIME(m.segundos_mayor_apertura) AS tiempo_mayor_apertura,
+                DATE_FORMAT(m.fecha_mayor_apertura, '%Y-%m-%d %H:%i:%s') AS fecha_mayor_apertura,
+                DATE_FORMAT(MIN(a.opened_at), '%Y-%m-%d %H:%i:%s') AS fecha_primer_apertura,
+                DATE_FORMAT(MAX(a.opened_at), '%Y-%m-%d %H:%i:%s') AS fecha_ultima_apertura
             FROM aperturas_y_cierres_emparejados a
             LEFT JOIN bateria_reciente b ON a.mac = b.mac
             LEFT JOIN ultimo_estado e ON a.mac = e.mac
             LEFT JOIN mayor_apertura m ON a.mac = m.mac
             WHERE a.closed_at IS NOT NULL
             GROUP BY
-            a.mac,
-            b.nivel_bateria_mas_reciente,
-            e.estado_reciente,
-            m.segundos_mayor_apertura,
-            m.fecha_mayor_apertura
-            ORDER BY a.mac;
+                a.mac,
+                b.nivel_bateria_mas_reciente,
+                e.estado_reciente,
+                m.segundos_mayor_apertura,
+                m.fecha_mayor_apertura
+            ORDER BY a.mac
+            ;
         `;
 
         // Pasar los parámetros en orden
