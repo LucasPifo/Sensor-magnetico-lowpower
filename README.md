@@ -224,7 +224,7 @@ Navega hasta la raíz de tu carpeta api
 
 Ejecuta el siguiente comando para instalar las dependencias:
 ```
-npm install express helmet dotenv cors morgan mysql2 moment
+npm install
 ```
 Este comando descargará e instalará todas las librerías necesarias para el funcionamiento del servidor, la interacción con la base de datos y la gestión de fechas.
 
@@ -236,7 +236,7 @@ Asegúrate de que estás en la raíz de tu carpeta api en tu terminal.
 Ejecuta el siguiente comando:
 
 ```
-node index.js
+npm run dev
 ```
 Si todo está configurado correctamente, verás un mensaje en tu consola indicando que el servidor HTTPS está en funcionamiento:
 
