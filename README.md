@@ -194,16 +194,11 @@ Navega hasta la carpeta api.
 
 Crea la carpeta certs:
 
-Genera la clave privada (key.pem):
+Genera la clave privada (key.pem) y certificado autofirmado (cert.pem):
 
 ``` 
-openssl genrsa -out key.pem 2048
+openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
 ``` 
-
-Genera el certificado autofirmado (cert.pem):
-```
-openssl req -new -x509 -key key.pem -out cert.pem -days 365
-```
 
 Durante este proceso, se te pedirán algunos detalles (país, organización, etc.). Puedes rellenarlos o dejarlos en blanco, ya que son para un certificado de desarrollo. Una vez generados, estos archivos deben estar en la carpeta certs.
 
