@@ -70,7 +70,7 @@ const uint16_t DEBOUNCE_MS = 400;
 void IRAM_ATTR sensorCambio() {
   noInterrupts();
   unsigned long ahora = millis();
-  bool estatusActual = !digitalRead(SENSOR);
+  bool estatusActual = digitalRead(SENSOR);
   if ((ahora - tiempoUltimoEventoMs) < DEBOUNCE_MS) return;
   if (indiceEvento >= MAX_EVENTOS) return;
   if (estatusActual == eventos[indiceEvento-1].estado) return;
@@ -523,7 +523,7 @@ void setup() {
   tiempoUltimoEventoMs = tiempoInicio;
 
   delay(400);
-  eventos[indiceEvento].estado = !digitalRead(SENSOR);
+  eventos[indiceEvento].estado = digitalRead(SENSOR);
   eventos[indiceEvento].tiempoRelativo = 0;
   indiceEvento++;
 
